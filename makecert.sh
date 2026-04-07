@@ -19,7 +19,7 @@ printf '01\n' > "$DEMO_CA_DIR/serial"
     -out req.pem \
     -sha256 \
     -nodes \
-    -subj "/C=CA/ST=BC/O=Worth Doing Badly/CN=Worth Doing Badly DDI" \
+    -subj "/C=CA/ST=BC/O=roooot.dev/CN=LaraJIT DDI" \
     -addext "basicConstraints=critical, CA:true"
 
 "$OPENSSL_BIN" ca \
