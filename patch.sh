@@ -2,20 +2,31 @@
 set -e
 
 DMG_NAME="DeveloperDiskImageModified.dmg"
-SOURCE_DMG="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport/16.1/DeveloperDiskImage.dmg"
+DEVICE_SUPPORT="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport"
 MOUNT_POINT="/Volumes/DeveloperDiskImage"
-LAUNCH_DAEMONS_DIR="$MOUNT_POINT/Library/LaunchDaemons"
 PLIST_FILE="com.apple.debugserver.plist"
 
-rm -f "$DMG_NAME"
+echo "available ddis:"
+versions=($(ls "$DEVICE_SUPPORT" | sort -V))
+for i in "${!versions[@]}"; do
+    echo "$((i+1)). ${versions[$i]}"
+done
 
+read -p "select version (1-${#versions[@]}): " choice
+selected="${versions[$((choice-1))]}"
+SOURCE_DMG="$DEVICE_SUPPORT/$selected/DeveloperDiskImage.dmg"
+
+echo "selected: $selected"
+
+rm -f "$DMG_NAME"
 hdiutil convert -format UDRW -o "$DMG_NAME" "$SOURCE_DMG"
 hdiutil attach -owners on "$DMG_NAME"
 
-cp "$PLIST_FILE" "$LAUNCH_DAEMONS_DIR/"
-chown root:wheel "$LAUNCH_DAEMONS_DIR/$PLIST_FILE"
-chmod 644 "$LAUNCH_DAEMONS_DIR/$PLIST_FILE"
+cp "$PLIST_FILE" "$MOUNT_POINT/Library/LaunchDaemons/"
+chown root:wheel "$MOUNT_POINT/Library/LaunchDaemons/$PLIST_FILE"
+chmod 644 "$MOUNT_POINT/Library/LaunchDaemons/$PLIST_FILE"
 
 hdiutil detach "$MOUNT_POINT"
+openssl dgst -sign key.pem -out "$DMG_NAME.signature" -binary -sha1 "$DMG_NAME"
 
-openssl dgst -sign key.pem -out DeveloperDiskImageModified.dmg.signature -binary -sha1 DeveloperDiskImageModified.dmg
+echo "done!"
