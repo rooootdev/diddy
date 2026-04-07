@@ -2,7 +2,7 @@
 set -e
 
 DMG_NAME="DeveloperDiskImageModified.dmg"
-DEVICE_SUPPORT="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport"
+DDI_DIR="/Library/Developer/DeveloperDiskImages/iOS_DDI/Restore"
 MOUNT_POINT="/Volumes/DeveloperDiskImage"
 PLIST_FILE="com.apple.debugserver.plist"
 
@@ -10,16 +10,16 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 echo "available ddis:"
-versions=($(ls "$DEVICE_SUPPORT" | sort -V))
-for i in "${!versions[@]}"; do
-    echo -e "$((i+1)). ${BOLD}iOS ${versions[$i]}${NC}"
+mapfile -t ddies < <(ls "$DDI_DIR"/*.dmg 2>/dev/null | sort -V)
+for i in "${!ddies[@]}"; do
+    basename_ddi=$(basename "${ddies[$i]}")
+    echo -e "$((i+1)). ${BOLD}${basename_ddi}${NC}"
 done
 
-read -p "select ddi (1-${#versions[@]}): " choice
-selected="${versions[$((choice-1))]}"
-SOURCE_DMG="$DEVICE_SUPPORT/$selected/DeveloperDiskImage.dmg"
+read -p "select ddi (1-${#ddies[@]}): " choice
+SOURCE_DMG="${ddies[$((choice-1))]}"
 
-echo "selected: $selected"
+echo "selected: $(basename "$SOURCE_DMG")"
 
 rm -f "$DMG_NAME"
 hdiutil convert -format UDRW -o "$DMG_NAME" "$SOURCE_DMG"
