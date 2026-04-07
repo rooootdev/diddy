@@ -6,13 +6,16 @@ DEVICE_SUPPORT="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.pl
 MOUNT_POINT="/Volumes/DeveloperDiskImage"
 PLIST_FILE="com.apple.debugserver.plist"
 
+BOLD='\033[1m'
+NC='\033[0m'
+
 echo "available ddis:"
 versions=($(ls "$DEVICE_SUPPORT" | sort -V))
 for i in "${!versions[@]}"; do
-    echo "$((i+1)). ${versions[$i]}"
+    echo -e "$((i+1)). ${BOLD}iOS ${versions[$i]}${NC}"
 done
 
-read -p "select version (1-${#versions[@]}): " choice
+read -p "select ddi (1-${#versions[@]}): " choice
 selected="${versions[$((choice-1))]}"
 SOURCE_DMG="$DEVICE_SUPPORT/$selected/DeveloperDiskImage.dmg"
 
@@ -29,4 +32,4 @@ chmod 644 "$MOUNT_POINT/Library/LaunchDaemons/$PLIST_FILE"
 hdiutil detach "$MOUNT_POINT"
 openssl dgst -sign key.pem -out "$DMG_NAME.signature" -binary -sha1 "$DMG_NAME"
 
-echo "done!"
+echo "${BOLD}done!${NC}"
